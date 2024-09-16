@@ -60,7 +60,7 @@ chmod +x os/linux_x86_64/XbSymbolDatabaseTool
 chmod +x os/mac_x86_64/XbSymbolDatabaseTool
 
 echo "[*] Building..."
-xsltproc -o src/main/java/XbeLoader/XbeXtlidDb.java xtlid2java.xslt /tmp/xtlid.xml
+java XbeXtlidDbGen.java /tmp/xtlid.xml >src/main/java/XbeLoader/XbeXtlidDb.java
 gradle -b build.gradle
 
 if [[ "$RUNTESTS" == "1" || "$CI" == "true" ]]; then
