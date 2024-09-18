@@ -137,13 +137,13 @@ public class XbeImageHeader implements StructConverter {
 		struct.add(DWORD, 4, "SizeOfStack", null);
 		struct.add(DWORD, 4, "SizeOfHeapReserve", null);
 		struct.add(DWORD, 4, "SizeOfHeapCommit", null);
-		struct.add(DWORD, 4, "PeImageBase", null);
+		struct.add(POINTER, 4, "PeImageBase", null);
 		struct.add(DWORD, 4, "PeSizeOfImage", null);
 		struct.add(DWORD, 4, "PeImageCheckSum", null);
 		struct.add(DWORD, 4, "PeTimeDateStamp", null);
-		struct.add(DWORD, 4, "PeDebugPath", null);
-		struct.add(DWORD, 4, "PeDebugFilename", null);
-		struct.add(DWORD, 4, "PeDebugFilenameUnicode", null);
+		struct.add(POINTER, 4, "PeDebugPath", null);
+		struct.add(POINTER, 4, "PeDebugFilename", null);
+		struct.add(POINTER, 4, "PeDebugFilenameUnicode", null);
 		struct.add(DWORD, 4, "PointerToKernelThunkTable", null);
 		struct.add(DWORD, 4, "PointerToDebugImportTable", null);
 		struct.add(DWORD, 4, "NumberOfLibraries", null);

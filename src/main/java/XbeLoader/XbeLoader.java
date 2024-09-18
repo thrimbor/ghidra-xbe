@@ -5,7 +5,12 @@ import java.util.*;
 
 import ghidra.app.util.Option;
 import ghidra.app.util.bin.ByteProvider;
+import ghidra.app.util.bin.ByteProviderWrapper;
 import ghidra.app.util.bin.BinaryReader;
+import ghidra.app.util.bin.format.mz.DOSHeader;
+import ghidra.app.util.bin.format.pe.InvalidNTHeaderException;
+import ghidra.app.util.bin.format.pe.NTHeader;
+import ghidra.app.util.bin.format.pe.PortableExecutable.SectionLayout;
 import ghidra.app.util.bin.StructConverter;
 import ghidra.app.util.importer.MessageLog;
 import ghidra.app.util.opinion.AbstractLibrarySupportLoader;
@@ -548,6 +553,32 @@ public class XbeLoader extends AbstractLibrarySupportLoader {
 				DataType libDT = new XbeLibraryHeader().toDataType();
 				createStruct(api, log, libDT, header.libFeaturesAddr + i * libDT.getLength());
 			}
+		}
+		if (header.peBaseAddr != 0) {
+			try {
+				// FIXME: Use public PortableExecutable(ByteProvider bp, SectionLayout layout, boolean advancedProcess,
+				//            boolean parseCliHeaders) throws IOException {
+				// 	          instead?
+
+				DOSHeader dh = new DOSHeader(new BinaryReader(new ByteProviderWrapper(provider, header.peBaseAddr - header.baseAddr, provider.length() - (header.peBaseAddr-header.baseAddr)), true));
+				if (dh.isDosSignature()) {
+					createStruct(api, log, dh.toDataType(), header.peBaseAddr);
+
+					log.appendMsg("DOS/MZ header created");
+
+					if (dh.hasPeHeader()) {
+						NTHeader pe = new NTHeader(new BinaryReader(new ByteProviderWrapper(provider, header.peBaseAddr - header.baseAddr, provider.length() - (header.peBaseAddr-header.baseAddr)), true), dh.e_lfanew(), SectionLayout.MEMORY, false, false);
+						createStruct(api, log, pe.toDataType(), header.peBaseAddr + dh.e_lfanew());
+					}
+				} else {
+					Msg.error(this, "Embedded PE/MZ header not valid, e_magic: " + Integer.toHexString(dh.e_magic()));
+				}
+			} catch (DuplicateNameException e) {
+				Msg.error(this, "Could not decode embedded PE/MZ header: " + e.getMessage());
+			} catch (InvalidNTHeaderException e) {
+				Msg.error(this, "Could not decode embedded PE/MZ header: " + e.getMessage());
+			}
+
 		}
 
 		// Set .XTLID data types
